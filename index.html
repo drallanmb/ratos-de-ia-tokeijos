@@ -102,7 +102,9 @@
 
   .overlay {
     position: absolute; inset: 0;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    display: flex; flex-direction: column; align-items: center; justify-content: safe center;
+    overflow-y: auto; overflow-x: hidden;
+    scrollbar-width: thin; scrollbar-color: var(--yellow-dark) transparent;
     gap: 16px;
     padding: 20px;
     text-align: center;
@@ -112,7 +114,7 @@
   }
   .overlay.hidden { opacity: 0; pointer-events: none; }
   .title {
-    font-size: clamp(18px, 5vw, 30px);
+    font-size: clamp(14px, calc(var(--board-w, 600px) * .05), 30px);
     color: var(--yellow);
     text-shadow: 3px 3px 0 #5b2fa8, 6px 6px 0 #000;
     margin: 0;
@@ -121,7 +123,7 @@
   /* Logo no estilo do ratosdeia.com.br: letras laranja de "tijolinho" pixelado */
   .logo { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 10px; }
   .logo .brick {
-    font-size: clamp(26px, 7.5vw, 44px);
+    font-size: clamp(16px, calc(var(--board-w, 600px) * .072), 44px);
     line-height: 1.15;
     letter-spacing: .04em;
     color: transparent;
@@ -146,6 +148,37 @@
     box-shadow: inset -4px -4px 0 #111, inset 4px 4px 0 #34343c, 4px 4px 0 #000;
   }
   .btn.ghost:active { box-shadow: inset -4px -4px 0 #111, inset 4px 4px 0 #34343c, 2px 2px 0 #000; }
+  /* ---------- Celular ---------- */
+  @media (max-width: 480px) {
+    .hud { gap: 8px; }
+    .right-group { gap: 6px; }
+    .mult { min-width: 0; padding: 5px 8px 7px 6px; gap: 6px; }
+    .mult .mx { font-size: 11px; }
+    .value { font-size: 14px; }
+    .value.small { font-size: 11px; }
+    .icon-btn { width: 30px; height: 30px; }
+  }
+
+  /* ---------- Footer ---------- */
+  .footer {
+    display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;
+    gap: 8px 16px;
+    width: var(--board-w, 600px);
+    max-width: 100%;
+    margin-top: 4px;
+    font-size: 8px;
+    color: var(--muted);
+  }
+  .footer a { color: inherit; text-decoration: none; display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+  .footer a > span { white-space: nowrap; }
+  .footer a:hover { color: var(--text); }
+  .footer strong { color: var(--text); font-weight: normal; }
+  .footer a:hover strong, .footer a:hover .arrow { color: var(--yellow); }
+  .chip-sm { background: var(--yellow); color: #1a1a1d; padding: 3px 4px 2px; }
+  .sig-icons { display: inline-flex; align-items: center; gap: 4px; }
+  .sig-icons svg { display: block; shape-rendering: crispEdges; }
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
   .icon-btn:disabled { opacity: .35; cursor: default; }
   .icon-btn:disabled:hover { border-color: var(--line); color: var(--text); }
   .legend {
@@ -239,6 +272,20 @@
   </div>
 </div>
 
+<footer class="footer" id="footer">
+  <a href="https://ratosdeia.com.br/" target="_blank" rel="noopener">
+    <span>🐀 ratos de</span><span class="chip-sm">IA</span><span class="arrow">→</span>
+  </a>
+  <a href="https://www.anamnesismd.com.br" target="_blank" rel="noopener">
+    <span>Feito com</span>
+    <span class="sig-icons" aria-hidden="true">
+      <svg data-icon="brain"></svg><span>+</span><svg data-icon="heart"></svg><span>+</span><svg data-icon="bot"></svg>
+    </span>
+    <span class="sr-only">cérebro, coração e inteligência artificial</span>
+    <span>por <strong>anamnesisMD</strong></span>
+  </a>
+</footer>
+
 <script>
 (() => {
   // ================== Configuração ==================
@@ -273,7 +320,7 @@
   let C = 12, ZOOM = 2, W = 0, H = 0;
 
   function resize() {
-    const hudH = $('hud').offsetHeight + 14;
+    const hudH = $('hud').offsetHeight + 14 + $('footer').offsetHeight + 18;
     const avail = Math.min(window.innerWidth - 32 - 24, window.innerHeight - 32 - hudH - 24);
     // maior zoom inteiro que ainda deixa ≥14 "pixels de arte" por casa
     ZOOM = 2; C = Math.max(8, Math.floor(avail / (COLS * 2)));
@@ -993,7 +1040,8 @@
     if (state === 'ready') start();
     queueDir(Math.abs(dx) > Math.abs(dy) ? { x: Math.sign(dx), y: 0 } : { x: 0, y: Math.sign(dy) });
   }, { passive: true });
-  board.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
+  // durante a partida o dedo controla o rato; nas telas de menu deixa rolar
+  board.addEventListener('touchmove', e => { if (state === 'playing') e.preventDefault(); }, { passive: false });
 
   $('startBtn').addEventListener('click', start);
   $('againBtn').addEventListener('click', start);
@@ -1019,6 +1067,56 @@
     const p = POWERUPS[k];
     legendRow(g => drawLogo(g, k, 7, 7, 14), `${p.name} — ${MULT_DURATION / 1000}s`, '×' + p.mult);
   }
+
+  // ================== Assinatura: ícones em pixel art ==================
+  // '#' = cor principal, 'o' = cor de detalhe, '.' = transparente
+  const PIXEL_ICONS = {
+    brain: { main: '#b48ae6', detail: '#6d3e97', map: [
+      '....#####....',
+      '..###o#####..',
+      '.#oo##o##oo#.',
+      '###o##o#o##o#',
+      '#o##oo##o##o#',
+      '#o####o##oo##',
+      '##ooooo######',
+      '.####o##oooo#',
+      '..####.######',
+      '........##...',
+    ] },
+    heart: { main: '#ee8a2b', detail: '#ffc98a', map: [
+      '.##...##.',
+      '#o##.####',
+      '#o#######',
+      '#########',
+      '.#######.',
+      '..#####..',
+      '...###...',
+      '....#....',
+    ] },
+    bot: { main: '#4d94e8', detail: '#a9d0ff', map: [
+      '....#....',
+      '....#....',
+      '.#######.',
+      '.#.....#.',
+      '##.o.o.##',
+      '.#.....#.',
+      '.#.ooo.#.',
+      '.#######.',
+    ] },
+  };
+  document.querySelectorAll('svg[data-icon]').forEach(svg => {
+    const icon = PIXEL_ICONS[svg.dataset.icon];
+    const h = icon.map.length, w = icon.map[0].length;
+    svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+    svg.setAttribute('width', w * 2);
+    svg.setAttribute('height', h * 2);
+    let rects = '';
+    icon.map.forEach((row, y) => [...row].forEach((ch, x) => {
+      if (ch === '.') return;
+      rects += `<rect x="${x}" y="${y}" width="1" height="1" fill="${ch === 'o' ? icon.detail : icon.main}"/>`;
+    }));
+    svg.innerHTML = rects;
+  });
 
   // ================== Início ==================
   resize();
