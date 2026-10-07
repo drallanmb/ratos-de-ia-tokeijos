@@ -122,6 +122,11 @@
   }
   /* Logo no estilo do ratosdeia.com.br: letras laranja de "tijolinho" pixelado */
   .logo { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  /* Header: só o nome do jogo, numa linha */
+  .site-header { width: var(--board-w, 600px); max-width: 100%; display: flex; justify-content: center; }
+  .site-header .logo { flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 8px 14px; }
+  .site-header .brick { font-size: clamp(14px, calc(var(--board-w, 600px) * .042), 24px); }
+  .site-header .chip { font-size: 8px; padding: 5px 8px 4px; }
   .logo .brick {
     font-size: clamp(16px, calc(var(--board-w, 600px) * .072), 44px);
     line-height: 1.15;
@@ -207,6 +212,13 @@
 </head>
 <body>
 
+<header class="site-header" id="header">
+  <h1 class="logo">
+    <span class="brick">RATOS DE IA</span>
+    <span class="chip">caça aos tokeijos</span>
+  </h1>
+</header>
+
 <div class="hud" id="hud">
   <div class="stat">
     <span class="label">Pontos</span>
@@ -242,10 +254,10 @@
   <canvas id="game"></canvas>
 
   <div class="overlay" id="startScreen">
-    <h1 class="logo">
+    <div class="logo">
       <span class="brick">RATOS<br>DE IA</span>
       <span class="chip">caça aos tokeijos</span>
-    </h1>
+    </div>
     <p class="subtitle">come o tokeijo, faz o rabo crescer e pega as IAs pra <b>multiplicar os pontos</b>. só não bate na parede nem no teu próprio rabo.</p>
     <div class="legend" id="legend"></div>
     <button class="btn" id="startBtn">JOGAR</button>
@@ -320,7 +332,7 @@
   let C = 12, ZOOM = 2, W = 0, H = 0;
 
   function resize() {
-    const hudH = $('hud').offsetHeight + 14 + $('footer').offsetHeight + 18;
+    const hudH = $('header').offsetHeight + 14 + $('hud').offsetHeight + 14 + $('footer').offsetHeight + 18;
     const avail = Math.min(window.innerWidth - 32 - 24, window.innerHeight - 32 - hudH - 24);
     // maior zoom inteiro que ainda deixa ≥14 "pixels de arte" por casa
     ZOOM = 2; C = Math.max(8, Math.floor(avail / (COLS * 2)));
