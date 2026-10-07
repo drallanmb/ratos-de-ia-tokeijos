@@ -2,9 +2,11 @@
 
 Um jogo estilo *Snake* em pixel art, inspirado no [Ratos de IA](https://ratosdeia.com.br/): em vez de uma cobrinha, é um ratinho roxo que come **tokeijos**, e o que cresce é o **rabo**.
 
+### 🎮 [Jogar agora](https://ratos-de-ia-caca-aos-tokeijos.drallanmb.chatgpt.site/)
+
 ## Como jogar
 
-Abre o `index.html` no navegador. É um arquivo só, sem build e sem dependências.
+Joga direto no [site](https://ratos-de-ia-caca-aos-tokeijos.drallanmb.chatgpt.site/), ou abre o `index.html` no navegador: é um arquivo só, sem build e sem dependências.
 
 - **Mover:** setas ou `WASD` (no celular, deslizar o dedo)
 - **Pausar:** `Espaço`, `Esc`, `P` ou o botão ⏸
